@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct WeatherView: View {
+    @State var section = 0
     @Binding var isShowProgeressRing: Bool
     var viewModel: WeatherViewViewModel
     var detailViewModel: DetailWeatherViewViewModel
     
-    @State var section = 0
     var body: some View {
         VStack(alignment: .leading) {
             VStack(alignment: .leading, spacing: 8) {
@@ -47,9 +47,10 @@ struct WeatherView: View {
                 .foregroundColor(.white)
                 .cornerRadius(25)
                 .overlay {
-//                    RoundedRectangle(cornerRadius: 25)
-//                        .stroke(lineWidth: 2)
-                        
+                    RoundedRectangle(cornerRadius: 25)
+                        .stroke(lineWidth: 2)
+                        .opacity(0.2)
+                        .blendMode(.overlay)
                 }
                 //.innerShadow(shape: RoundedRectangle(cornerRadius: 25), color: .white)
                 .innerShadow(shape: RoundedRectangle(cornerRadius: 25), color: .white, lineWidth: 1, blur: 6)
@@ -57,7 +58,6 @@ struct WeatherView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .edgesIgnoringSafeArea(.bottom)
-        //.background(Color(hue: 0.666, saturation: 0.777, brightness: 0.333))
         .background(BackgroundAppView())
         .preferredColorScheme(.dark)
     }
