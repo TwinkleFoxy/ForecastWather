@@ -57,7 +57,7 @@ struct ForecastCardView: View {
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 16)
-            .frame(width: 66, height: 159)
+            .frame(width: 70, height: 159)
         }
     }
 }

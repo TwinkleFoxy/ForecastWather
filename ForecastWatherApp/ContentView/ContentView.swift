@@ -8,46 +8,20 @@
 import SwiftUI
 
 struct ContentView: View {
-    private let networkService = NetworkService()
-    private let contentViewViewModel = ContentViewViewModel()
-    @StateObject private var locationManager = LocationManager()
-    @State private var networkError: String = ""
-    @State private var isReceiveWather: Bool = false
-    @State private var isShowCurrantWather: Bool = false
     @State private var isCanceledRequestForecast: Bool = false
-    @State private var currantWather: CurrentWeatherForecastModel?
-    @State private var everyThreeHourForecast: Days5Every3HourForecastModel?
+    @StateObject private var contentViewViewModel = ContentViewViewModel()
+    @StateObject private var locationManager = LocationManager()
+    private let networkService = NetworkService()
     
     var body: some View {
         VStack {
             if let coordinate = locationManager.location {
-                if let currantWather = currantWather, let everyThreeHourForecast = everyThreeHourForecast {
-                    contentViewViewModel.currantWeatherView(currantWather: currantWather, everyThreeHourForecast: everyThreeHourForecast, isShowProgeressRing: $isShowCurrantWather)
+                if let currantWather = contentViewViewModel.currantWather, let everyThreeHourForecast = contentViewViewModel.everyThreeHourForecast {
+                    contentViewViewModel.currantWeatherView(currantWather: currantWather, everyThreeHourForecast: everyThreeHourForecast, isShowProgeressRing: $contentViewViewModel.isShowCurrantWather)
                 } else if isCanceledRequestForecast == false {
                     ProgressCiecular()
                         .task {
-//                            print("latitude: \(coordinate.latitude)")
-//                            print()
-                            networkService.featchCurrentWeather(lat: coordinate.latitude, lon: coordinate.longitude) { currantWather, error in
-                                if let currantWather = currantWather {
-                                    self.currantWather = currantWather
-                                    isShowCurrantWather = true
-                                } else if let error = error {
-                                    networkError = error
-                                    isShowCurrantWather = false
-                                    isReceiveWather ? nil : isReceiveWather.toggle()
-                                }
-                            }
-                            
-                            networkService.featchEvery3HourForecast(lat: coordinate.latitude, lon: coordinate.longitude) { everyThreeHourForecast, error in
-                                if let everyThreeHourForecast = everyThreeHourForecast {
-                                    self.everyThreeHourForecast = everyThreeHourForecast
-                                    print(currantWather?.coord)
-                                } else if let error = error {
-                                    networkError = error
-                                    isReceiveWather ? nil : isReceiveWather.toggle()
-                                }
-                            }
+                            contentViewViewModel.getWeatherFormNetwork(networkService: networkService, coordinate: coordinate)
                         }
                 } else {
                     ErrorScreenView()
@@ -67,29 +41,11 @@ struct ContentView: View {
         } message: {
             Text("\(locationManager.textErrorReceiveLocation)")
         }
-        .alert("Error request weather.", isPresented: $isReceiveWather, actions: {
+        .alert("Error request weather.", isPresented: $contentViewViewModel.isReceiveWather, actions: {
             Button("Cancel", role: .cancel, action: { isCanceledRequestForecast = true })
             Button("Try again") {
                 if let coordinate = locationManager.location {
-                    networkService.featchCurrentWeather(lat: coordinate.latitude, lon: coordinate.longitude) { currantWather, error in
-                        if let currantWather = currantWather {
-                            self.currantWather = currantWather
-                            isShowCurrantWather = true
-                        } else if let error = error {
-                            networkError = error
-                            isShowCurrantWather = false
-                            isReceiveWather ? nil : isReceiveWather.toggle()
-                        }
-                    }
-                    
-                    networkService.featchEvery3HourForecast(lat: coordinate.latitude, lon: coordinate.longitude) { everyThreeHourForecast, error in
-                        if let everyThreeHourForecast = everyThreeHourForecast {
-                            self.everyThreeHourForecast = everyThreeHourForecast
-                        } else if let error = error {
-                            networkError = error
-                            isReceiveWather ? nil : isReceiveWather.toggle()
-                        }
-                    }
+                    contentViewViewModel.getWeatherFormNetwork(networkService: networkService, coordinate: coordinate)
                 }
             }
         }, message: {
